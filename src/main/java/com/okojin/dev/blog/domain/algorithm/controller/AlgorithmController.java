@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/algorithms")
@@ -19,8 +20,8 @@ public class AlgorithmController {
         return algorithmService.getPublishedAlgorithms();
     }
 
-    @GetMapping("/{slug}")
-    public AlgorithmDto getAlgorithm(@PathVariable String slug) {
-        return algorithmService.getAlgorithmBySlug(slug);
+    @GetMapping("/{id}")
+    public AlgorithmDto getAlgorithm(@PathVariable UUID id) {
+        return algorithmService.getAlgorithmById(id);
     }
 }

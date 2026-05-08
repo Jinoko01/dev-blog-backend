@@ -21,9 +21,6 @@ public class Algorithm {
     @Column(nullable = false)
     private String title;
 
-    @Column(unique = true)
-    private String slug;
-
     private String platform;
 
     private String difficulty;

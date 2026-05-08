@@ -61,7 +61,9 @@ public class PostService {
 
     @Transactional
     public PostMetricsDto incrementView(String slug) {
-        postMetricsRepository.incrementViews(slug);
+        if (postMetricsRepository.incrementViews(slug) == 0) {
+            postMetricsRepository.save(new PostMetrics(slug, 1, 0));
+        }
         return postMetricsRepository.findById(slug)
                 .map(PostMetricsDto::from)
                 .orElse(PostMetricsDto.empty(slug));
@@ -69,7 +71,9 @@ public class PostService {
 
     @Transactional
     public PostMetricsDto incrementLike(String slug) {
-        postMetricsRepository.incrementLikes(slug);
+        if (postMetricsRepository.incrementLikes(slug) == 0) {
+            postMetricsRepository.save(new PostMetrics(slug, 0, 1));
+        }
         return postMetricsRepository.findById(slug)
                 .map(PostMetricsDto::from)
                 .orElse(PostMetricsDto.empty(slug));

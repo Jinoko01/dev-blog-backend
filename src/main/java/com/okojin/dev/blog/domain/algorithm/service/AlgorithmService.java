@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +24,8 @@ public class AlgorithmService {
                 .toList();
     }
 
-    public AlgorithmDto getAlgorithmBySlug(String slug) {
-        return algorithmRepository.findBySlugAndPublishedTrue(slug)
+    public AlgorithmDto getAlgorithmById(UUID id) {
+        return algorithmRepository.findByIdAndPublishedTrue(id)
                 .map(AlgorithmDto::from)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
