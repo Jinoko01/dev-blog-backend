@@ -10,6 +10,7 @@ import java.util.UUID;
 public record AlgorithmDto(
         UUID id,
         String title,
+        String slug,
         String platform,
         String difficulty,
         String language,
@@ -27,6 +28,7 @@ public record AlgorithmDto(
         return new AlgorithmDto(
                 algorithm.getId(),
                 algorithm.getTitle(),
+                algorithm.getSlug(),
                 algorithm.getPlatform(),
                 algorithm.getDifficulty(),
                 algorithm.getLanguage(),

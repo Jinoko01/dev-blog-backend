@@ -17,9 +17,10 @@ public record PostDetailDto(
         OffsetDateTime createdAt,
         List<String> tags,
         int views,
-        int likes
+        int likes,
+        List<PostSummaryDto> relatedPosts
 ) {
-    public static PostDetailDto from(Post post, int views, int likes) {
+    public static PostDetailDto from(Post post, int views, int likes, List<PostSummaryDto> relatedPosts) {
         List<String> tagNames = post.getPostTags().stream()
                 .map(pt -> pt.getTag().getName())
                 .toList();
@@ -35,7 +36,8 @@ public record PostDetailDto(
                 post.getCreatedAt(),
                 tagNames,
                 views,
-                likes
+                likes,
+                relatedPosts
         );
     }
 }
