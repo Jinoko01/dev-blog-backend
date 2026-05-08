@@ -23,6 +23,6 @@ public class ArticleController {
             @RequestParam(required = false, defaultValue = "latest") String sort,
             @RequestParam(required = false, defaultValue = "1") int page
     ) {
-        return articleService.getArticles(search, tag, sort, page);
+        return articleService.getArticles(search, tag, sort, Math.max(1, page));
     }
 }

@@ -61,9 +61,8 @@ public class PostService {
 
     @Transactional
     public PostMetricsDto incrementView(String slug) {
-        if (postMetricsRepository.incrementViews(slug) == 0) {
-            postMetricsRepository.save(new PostMetrics(slug, 1, 0));
-        }
+        verifyPublishedPost(slug);
+        postMetricsRepository.upsertView(slug);
         return postMetricsRepository.findById(slug)
                 .map(PostMetricsDto::from)
                 .orElse(PostMetricsDto.empty(slug));
@@ -71,12 +70,17 @@ public class PostService {
 
     @Transactional
     public PostMetricsDto incrementLike(String slug) {
-        if (postMetricsRepository.incrementLikes(slug) == 0) {
-            postMetricsRepository.save(new PostMetrics(slug, 0, 1));
-        }
+        verifyPublishedPost(slug);
+        postMetricsRepository.upsertLike(slug);
         return postMetricsRepository.findById(slug)
                 .map(PostMetricsDto::from)
                 .orElse(PostMetricsDto.empty(slug));
+    }
+
+    private void verifyPublishedPost(String slug) {
+        if (!postRepository.existsBySlugAndPublishedTrue(slug)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
     private List<PostSummaryDto> findRelatedPosts(String currentSlug, List<String> tagNames) {

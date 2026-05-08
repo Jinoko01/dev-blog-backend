@@ -16,7 +16,7 @@ public class TagService {
     private final TagRepository tagRepository;
 
     public List<TagDto> getAllTags() {
-        return tagRepository.findAll().stream()
+        return tagRepository.findTagsInPublishedPosts().stream()
                 .map(TagDto::from)
                 .toList();
     }
