@@ -30,7 +30,8 @@ public class AdminPostService {
     @Transactional
     public PostDetailDto create(PostRequest request) {
         Post post = new Post();
-        applyRequest(post, request);
+        applyCommonFields(post, request);
+        post.setPublished(request.published() != null ? request.published() : false);
         Post saved = postRepository.save(post);
         syncTags(saved, request.tags());
 
@@ -40,7 +41,10 @@ public class AdminPostService {
     @Transactional
     public PostDetailDto update(UUID id, PostRequest request) {
         Post post = findOrThrow(id);
-        applyRequest(post, request);
+        applyCommonFields(post, request);
+        if (request.published() != null) {
+            post.setPublished(request.published());
+        }
         postRepository.save(post);
         syncTags(post, request.tags());
 
@@ -59,7 +63,7 @@ public class AdminPostService {
     @Transactional
     public void delete(UUID id) {
         Post post = findOrThrow(id);
-        postTagRepository.deleteByPostId(post.getId());
+        postTagRepository.bulkDeleteByPostId(post.getId());
         postRepository.delete(post);
     }
 
@@ -68,24 +72,29 @@ public class AdminPostService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    private void applyRequest(Post post, PostRequest request) {
+    private void applyCommonFields(Post post, PostRequest request) {
         post.setTitle(request.title());
         post.setSlug(request.slug());
         post.setDescription(request.description());
         post.setContent(request.content());
         post.setThumbnailUrl(request.thumbnailUrl());
-        post.setPublished(request.published() != null ? request.published() : false);
     }
 
     private void syncTags(Post post, List<String> tagNames) {
-        postTagRepository.deleteByPostId(post.getId());
+        postTagRepository.bulkDeleteByPostId(post.getId());
 
-        if (tagNames == null || tagNames.isEmpty()) return;
+        List<String> normalized = tagNames == null ? List.of() : tagNames.stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .toList();
 
-        List<Tag> existing = tagRepository.findByNameIn(tagNames);
+        if (normalized.isEmpty()) return;
+
+        List<Tag> existing = tagRepository.findByNameIn(normalized);
         Set<String> existingNames = existing.stream().map(Tag::getName).collect(Collectors.toSet());
 
-        List<Tag> created = tagNames.stream()
+        List<Tag> created = normalized.stream()
                 .filter(name -> !existingNames.contains(name))
                 .map(name -> tagRepository.save(new Tag(name)))
                 .toList();
