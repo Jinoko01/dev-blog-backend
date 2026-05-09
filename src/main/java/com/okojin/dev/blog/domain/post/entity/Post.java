@@ -2,6 +2,7 @@ package com.okojin.dev.blog.domain.post.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
@@ -18,20 +19,26 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Setter
     @Column(nullable = false)
     private String title;
 
+    @Setter
     @Column(nullable = false, unique = true)
     private String slug;
 
+    @Setter
     private String description;
 
+    @Setter
     @Column(columnDefinition = "text")
     private String content;
 
+    @Setter
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
+    @Setter
     @Column(nullable = false)
     private Boolean published;
 

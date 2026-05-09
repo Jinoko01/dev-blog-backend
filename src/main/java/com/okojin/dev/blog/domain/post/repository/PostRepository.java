@@ -19,6 +19,9 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.postTags pt LEFT JOIN FETCH pt.tag WHERE p.slug = :slug")
     Optional<Post> findBySlugWithTags(String slug);
 
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.postTags pt LEFT JOIN FETCH pt.tag WHERE p.id = :id")
+    Optional<Post> findByIdWithTags(UUID id);
+
     @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.postTags pt LEFT JOIN FETCH pt.tag WHERE p.published = true ORDER BY p.createdAt DESC")
     List<Post> findAllPublishedWithTags();
 }
