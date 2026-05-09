@@ -1,5 +1,6 @@
 package com.okojin.dev.blog.domain.post.controller;
 
+import com.okojin.dev.blog.auth.JwtUtil;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.post.dto.TagDto;
 import com.okojin.dev.blog.domain.post.service.TagService;
@@ -25,6 +26,9 @@ class TagControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
 
     @MockitoBean
     private TagService tagService;
