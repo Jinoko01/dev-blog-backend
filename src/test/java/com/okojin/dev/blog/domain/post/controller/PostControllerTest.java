@@ -1,5 +1,6 @@
 package com.okojin.dev.blog.domain.post.controller;
 
+import com.okojin.dev.blog.auth.JwtUtil;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
 import com.okojin.dev.blog.domain.post.dto.PostMetricsDto;
@@ -31,6 +32,9 @@ class PostControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
 
     @MockitoBean
     private PostService postService;

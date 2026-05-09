@@ -1,5 +1,6 @@
 package com.okojin.dev.blog.domain.algorithm.controller;
 
+import com.okojin.dev.blog.auth.JwtUtil;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.algorithm.dto.AlgorithmDto;
 import com.okojin.dev.blog.domain.algorithm.service.AlgorithmService;
@@ -28,6 +29,9 @@ class AlgorithmControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
 
     @MockitoBean
     private AlgorithmService algorithmService;
