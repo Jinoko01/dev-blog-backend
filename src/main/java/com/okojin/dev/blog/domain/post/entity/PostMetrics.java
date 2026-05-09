@@ -1,11 +1,15 @@
 package com.okojin.dev.blog.domain.post.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "post_metrics")
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PostMetrics {
 
     @Id

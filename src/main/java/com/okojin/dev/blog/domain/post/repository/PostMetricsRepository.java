@@ -14,11 +14,19 @@ public interface PostMetricsRepository extends JpaRepository<PostMetrics, String
 
     @Transactional
     @Modifying
-    @Query("UPDATE PostMetrics m SET m.views = m.views + 1 WHERE m.slug = :slug")
-    int incrementViews(String slug);
+    @Query(
+        value = "INSERT INTO post_metrics (slug, views, likes) VALUES (:slug, 1, 0) " +
+                "ON CONFLICT (slug) DO UPDATE SET views = post_metrics.views + 1",
+        nativeQuery = true
+    )
+    void upsertView(String slug);
 
     @Transactional
     @Modifying
-    @Query("UPDATE PostMetrics m SET m.likes = m.likes + 1 WHERE m.slug = :slug")
-    int incrementLikes(String slug);
+    @Query(
+        value = "INSERT INTO post_metrics (slug, views, likes) VALUES (:slug, 0, 1) " +
+                "ON CONFLICT (slug) DO UPDATE SET likes = post_metrics.likes + 1",
+        nativeQuery = true
+    )
+    void upsertLike(String slug);
 }

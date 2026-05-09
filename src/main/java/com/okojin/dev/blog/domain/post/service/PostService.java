@@ -1,0 +1,112 @@
+package com.okojin.dev.blog.domain.post.service;
+
+import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
+import com.okojin.dev.blog.domain.post.dto.PostMetricsDto;
+import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
+import com.okojin.dev.blog.domain.post.entity.Post;
+import com.okojin.dev.blog.domain.post.entity.PostMetrics;
+import com.okojin.dev.blog.domain.post.repository.PostMetricsRepository;
+import com.okojin.dev.blog.domain.post.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class PostService {
+
+    private final PostRepository postRepository;
+    private final PostMetricsRepository postMetricsRepository;
+
+    public List<PostSummaryDto> getPublishedPosts() {
+        List<Post> posts = postRepository.findAllPublishedWithTags();
+        if (posts.isEmpty()) return List.of();
+
+        Map<String, PostMetrics> metricsMap = fetchMetricsMap(
+                posts.stream().map(Post::getSlug).toList()
+        );
+
+        return posts.stream()
+                .map(p -> toSummary(p, metricsMap))
+                .toList();
+    }
+
+    public PostDetailDto getPostBySlug(String slug) {
+        Post post = postRepository.findBySlugWithTags(slug)
+                .filter(Post::getPublished)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        PostMetrics metrics = postMetricsRepository.findById(slug).orElse(null);
+
+        List<String> tagNames = post.getPostTags().stream()
+                .map(pt -> pt.getTag().getName())
+                .toList();
+
+        List<PostSummaryDto> relatedPosts = findRelatedPosts(slug, tagNames);
+
+        return PostDetailDto.from(
+                post,
+                metrics != null ? metrics.getViews() : 0,
+                metrics != null ? metrics.getLikes() : 0,
+                relatedPosts
+        );
+    }
+
+    @Transactional
+    public PostMetricsDto incrementView(String slug) {
+        verifyPublishedPost(slug);
+        postMetricsRepository.upsertView(slug);
+        return postMetricsRepository.findById(slug)
+                .map(PostMetricsDto::from)
+                .orElse(PostMetricsDto.empty(slug));
+    }
+
+    @Transactional
+    public PostMetricsDto incrementLike(String slug) {
+        verifyPublishedPost(slug);
+        postMetricsRepository.upsertLike(slug);
+        return postMetricsRepository.findById(slug)
+                .map(PostMetricsDto::from)
+                .orElse(PostMetricsDto.empty(slug));
+    }
+
+    private void verifyPublishedPost(String slug) {
+        if (!postRepository.existsBySlugAndPublishedTrue(slug)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private List<PostSummaryDto> findRelatedPosts(String currentSlug, List<String> tagNames) {
+        if (tagNames.isEmpty()) return List.of();
+
+        List<Post> allPosts = postRepository.findAllPublishedWithTags();
+        Map<String, PostMetrics> metricsMap = fetchMetricsMap(
+                allPosts.stream().map(Post::getSlug).toList()
+        );
+
+        return allPosts.stream()
+                .filter(p -> !p.getSlug().equals(currentSlug))
+                .filter(p -> p.getPostTags().stream()
+                        .anyMatch(pt -> tagNames.contains(pt.getTag().getName())))
+                .limit(3)
+                .map(p -> toSummary(p, metricsMap))
+                .toList();
+    }
+
+    private Map<String, PostMetrics> fetchMetricsMap(List<String> slugs) {
+        return postMetricsRepository.findBySlugIn(slugs).stream()
+                .collect(Collectors.toMap(PostMetrics::getSlug, m -> m));
+    }
+
+    private PostSummaryDto toSummary(Post post, Map<String, PostMetrics> metricsMap) {
+        PostMetrics m = metricsMap.get(post.getSlug());
+        return PostSummaryDto.from(post, m != null ? m.getViews() : 0, m != null ? m.getLikes() : 0);
+    }
+}
