@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr *)",
+      "Bash(git fetch *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\SSAFY\\\\Desktop\\\\용진이꺼\\\\project\\\\dev-blog-backend\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(./gradlew compileJava)",
+      "Bash(Get-ChildItem -Recurse -Directory -Name)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "mcp__fabfa3e8-1ff2-46c6-8772-e9c5edbf6e92__get_project",
+      "Bash(powershell -Command \"[Convert]::ToBase64String\\([System.Security.Cryptography.RandomNumberGenerator]::GetBytes\\(32\\)\\)\")"
+    ]
+  }
+}
