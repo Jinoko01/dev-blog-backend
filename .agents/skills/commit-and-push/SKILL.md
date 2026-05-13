@@ -12,7 +12,7 @@ allowed-tools:
   - Bash(git push *)
 ---
 
-커밋 규칙은 [commit skill](./../commit/skill.md)을 따른다.
+커밋 규칙은 [commit skill](./../commit/SKILL.md)을 따른다.
 
 ## 절차
 
