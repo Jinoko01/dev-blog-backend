@@ -4,11 +4,10 @@ import com.okojin.dev.blog.admin.dto.AlgorithmRequest;
 import com.okojin.dev.blog.domain.algorithm.dto.AlgorithmDto;
 import com.okojin.dev.blog.domain.algorithm.entity.Algorithm;
 import com.okojin.dev.blog.domain.algorithm.repository.AlgorithmRepository;
+import com.okojin.dev.blog.common.exception.AlgorithmNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -50,7 +49,7 @@ public class AdminAlgorithmService {
 
     private Algorithm findOrThrow(UUID id) {
         return algorithmRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new AlgorithmNotFoundException(id));
     }
 
     private void applyCommonFields(Algorithm algorithm, AlgorithmRequest request) {

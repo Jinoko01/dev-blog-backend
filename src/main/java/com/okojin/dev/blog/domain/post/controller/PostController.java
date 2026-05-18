@@ -6,6 +6,8 @@ import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
 import com.okojin.dev.blog.domain.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -34,7 +36,12 @@ public class PostController {
     @Operation(summary = "포스트 상세 조회", description = "슬러그로 특정 포스트의 상세 내용을 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
-            @ApiResponse(responseCode = "404", description = "포스트 없음")
+            @ApiResponse(responseCode = "404",
+                    description = "slug에 해당하는 포스트 없음. GET /api/posts로 전체 목록 확인 후 올바른 slug 사용.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"POST_NOT_FOUND\",\"message\":\"slug 'my-post'에 해당하는 포스트가 존재하지 않습니다.\"}"
+                            )))
     })
     @SecurityRequirements
     @GetMapping("/{slug}")
@@ -44,7 +51,15 @@ public class PostController {
     }
 
     @Operation(summary = "조회수 증가", description = "포스트 조회수를 1 증가시킵니다.")
-    @ApiResponse(responseCode = "200", description = "처리 성공")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "처리 성공"),
+            @ApiResponse(responseCode = "404",
+                    description = "slug에 해당하는 포스트 없음.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"POST_NOT_FOUND\",\"message\":\"slug 'my-post'에 해당하는 포스트가 존재하지 않습니다.\"}"
+                            )))
+    })
     @SecurityRequirements
     @PostMapping("/{slug}/view")
     public PostMetricsDto incrementView(
@@ -53,7 +68,15 @@ public class PostController {
     }
 
     @Operation(summary = "좋아요 증가", description = "포스트 좋아요 수를 1 증가시킵니다.")
-    @ApiResponse(responseCode = "200", description = "처리 성공")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "처리 성공"),
+            @ApiResponse(responseCode = "404",
+                    description = "slug에 해당하는 포스트 없음.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"POST_NOT_FOUND\",\"message\":\"slug 'my-post'에 해당하는 포스트가 존재하지 않습니다.\"}"
+                            )))
+    })
     @SecurityRequirements
     @PostMapping("/{slug}/like")
     public PostMetricsDto incrementLike(

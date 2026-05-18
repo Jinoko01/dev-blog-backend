@@ -3,16 +3,16 @@ package com.okojin.dev.blog.auth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.okojin.dev.blog.auth.dto.LoginRequest;
 import com.okojin.dev.blog.auth.dto.LoginResponse;
+import com.okojin.dev.blog.common.exception.GlobalExceptionHandler;
+import com.okojin.dev.blog.common.exception.InvalidCredentialsException;
 import com.okojin.dev.blog.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class AuthControllerTest {
 
     @Autowired
@@ -49,15 +49,17 @@ class AuthControllerTest {
     }
 
     @Test
-    void 잘못된_자격증명으로_로그인하면_401을_반환한다() throws Exception {
+    void 잘못된_자격증명으로_로그인하면_401과_에러_응답을_반환한다() throws Exception {
         LoginRequest request = new LoginRequest("okojin", "wrong-password");
         given(authService.login(request))
-                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+                .willThrow(new InvalidCredentialsException());
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"))
+                .andExpect(jsonPath("$.message").value("아이디 또는 비밀번호가 올바르지 않습니다. 관리자 계정 정보를 확인하세요."));
     }
 
     @Test

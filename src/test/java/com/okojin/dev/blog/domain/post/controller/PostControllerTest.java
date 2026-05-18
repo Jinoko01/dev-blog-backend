@@ -1,6 +1,8 @@
 package com.okojin.dev.blog.domain.post.controller;
 
 import com.okojin.dev.blog.auth.JwtUtil;
+import com.okojin.dev.blog.common.exception.GlobalExceptionHandler;
+import com.okojin.dev.blog.common.exception.PostNotFoundException;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
 import com.okojin.dev.blog.domain.post.dto.PostMetricsDto;
@@ -10,10 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -21,13 +21,12 @@ import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PostController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class PostControllerTest {
 
     @Autowired
@@ -78,12 +77,14 @@ class PostControllerTest {
     }
 
     @Test
-    void 존재하지_않는_slug로_조회하면_404를_반환한다() throws Exception {
+    void 존재하지_않는_slug로_조회하면_404와_에러_응답을_반환한다() throws Exception {
         given(postService.getPostBySlug("not-found"))
-                .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .willThrow(new PostNotFoundException("not-found"));
 
         mockMvc.perform(get("/api/posts/not-found"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("POST_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("slug 'not-found'에 해당하는 포스트가 존재하지 않습니다."));
     }
 
     @Test
@@ -101,12 +102,14 @@ class PostControllerTest {
     }
 
     @Test
-    void 존재하지_않는_포스트의_조회수_증가는_404를_반환한다() throws Exception {
+    void 존재하지_않는_포스트의_조회수_증가는_404와_에러_응답을_반환한다() throws Exception {
         given(postService.incrementView("not-found"))
-                .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .willThrow(new PostNotFoundException("not-found"));
 
         mockMvc.perform(post("/api/posts/not-found/view"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("POST_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("slug 'not-found'에 해당하는 포스트가 존재하지 않습니다."));
     }
 
     @Test
@@ -124,12 +127,14 @@ class PostControllerTest {
     }
 
     @Test
-    void 존재하지_않는_포스트의_좋아요_증가는_404를_반환한다() throws Exception {
+    void 존재하지_않는_포스트의_좋아요_증가는_404와_에러_응답을_반환한다() throws Exception {
         given(postService.incrementLike("not-found"))
-                .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .willThrow(new PostNotFoundException("not-found"));
 
         mockMvc.perform(post("/api/posts/not-found/like"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("POST_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("slug 'not-found'에 해당하는 포스트가 존재하지 않습니다."));
     }
 
     private PostSummaryDto postSummary() {

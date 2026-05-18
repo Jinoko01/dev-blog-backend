@@ -7,11 +7,10 @@ import com.okojin.dev.blog.domain.post.entity.Post;
 import com.okojin.dev.blog.domain.post.entity.PostMetrics;
 import com.okojin.dev.blog.domain.post.repository.PostMetricsRepository;
 import com.okojin.dev.blog.domain.post.repository.PostRepository;
+import com.okojin.dev.blog.common.exception.PostNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,7 @@ public class PostService {
     public PostDetailDto getPostBySlug(String slug) {
         Post post = postRepository.findBySlugWithTags(slug)
                 .filter(Post::getPublished)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new PostNotFoundException(slug));
 
         PostMetrics metrics = postMetricsRepository.findById(slug).orElse(null);
 
@@ -79,7 +78,7 @@ public class PostService {
 
     private void verifyPublishedPost(String slug) {
         if (!postRepository.existsBySlugAndPublishedTrue(slug)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new PostNotFoundException(slug);
         }
     }
 

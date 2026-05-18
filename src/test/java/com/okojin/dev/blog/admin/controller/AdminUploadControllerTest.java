@@ -38,11 +38,13 @@ class AdminUploadControllerTest {
     private static final String ADMIN_TOKEN = "valid.admin.token";
 
     @Test
-    void 토큰_없이_업로드_URL_요청_시_401을_반환한다() throws Exception {
+    void 토큰_없이_업로드_URL_요청_시_401과_에러_응답을_반환한다() throws Exception {
         mockMvc.perform(post("/api/admin/upload")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new UploadRequest("image.png"))))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.message").value("인증이 필요합니다. Authorization 헤더에 'Bearer {토큰}' 형식으로 JWT를 포함하세요."));
     }
 
     @Test

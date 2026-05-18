@@ -4,17 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.okojin.dev.blog.admin.dto.AlgorithmRequest;
 import com.okojin.dev.blog.admin.service.AdminAlgorithmService;
 import com.okojin.dev.blog.auth.JwtUtil;
+import com.okojin.dev.blog.common.exception.AlgorithmNotFoundException;
+import com.okojin.dev.blog.common.exception.GlobalExceptionHandler;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.algorithm.dto.AlgorithmDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminAlgorithmController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class AdminAlgorithmControllerTest {
 
     @Autowired
@@ -48,11 +48,13 @@ class AdminAlgorithmControllerTest {
     private static final String ADMIN_TOKEN = "valid.admin.token";
 
     @Test
-    void 토큰_없이_admin_API를_호출하면_401을_반환한다() throws Exception {
+    void 토큰_없이_admin_API를_호출하면_401과_에러_응답을_반환한다() throws Exception {
         mockMvc.perform(post("/api/admin/algorithms")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.message").value("인증이 필요합니다. Authorization 헤더에 'Bearer {토큰}' 형식으로 JWT를 포함하세요."));
     }
 
     @Test
@@ -135,16 +137,18 @@ class AdminAlgorithmControllerTest {
     }
 
     @Test
-    void 존재하지_않는_알고리즘_삭제_시_404를_반환한다() throws Exception {
+    void 존재하지_않는_알고리즘_삭제_시_404와_에러_응답을_반환한다() throws Exception {
         given(jwtUtil.isValid(ADMIN_TOKEN)).willReturn(true);
         given(jwtUtil.extractRole(ADMIN_TOKEN)).willReturn("ADMIN");
         given(jwtUtil.extractUsername(ADMIN_TOKEN)).willReturn("admin");
-        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
+        doThrow(new AlgorithmNotFoundException(ALGO_ID))
                 .when(adminAlgorithmService).delete(ALGO_ID);
 
         mockMvc.perform(delete("/api/admin/algorithms/" + ALGO_ID)
                         .header("Authorization", "Bearer " + ADMIN_TOKEN))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ALGORITHM_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("id '" + ALGO_ID + "'에 해당하는 알고리즘이 존재하지 않습니다."));
     }
 
     private AlgorithmRequest validRequest() {
