@@ -83,4 +83,21 @@ public class PostController {
             @Parameter(description = "포스트 슬러그") @PathVariable String slug) {
         return postService.incrementLike(slug);
     }
+
+    @Operation(summary = "좋아요 취소", description = "포스트 좋아요 수를 1 감소시킵니다. (0 미만으로 내려가지 않습니다)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "처리 성공"),
+            @ApiResponse(responseCode = "404",
+                    description = "slug에 해당하는 포스트 없음.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"POST_NOT_FOUND\",\"message\":\"slug 'my-post'에 해당하는 포스트가 존재하지 않습니다.\"}"
+                            )))
+    })
+    @SecurityRequirements
+    @DeleteMapping("/{slug}/like")
+    public PostMetricsDto decrementLike(
+            @Parameter(description = "포스트 슬러그") @PathVariable String slug) {
+        return postService.decrementLike(slug);
+    }
 }

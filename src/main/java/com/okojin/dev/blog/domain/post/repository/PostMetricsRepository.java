@@ -29,4 +29,12 @@ public interface PostMetricsRepository extends JpaRepository<PostMetrics, String
         nativeQuery = true
     )
     void upsertLike(String slug);
+
+    @Transactional
+    @Modifying
+    @Query(
+        value = "UPDATE post_metrics SET likes = GREATEST(likes - 1, 0) WHERE slug = :slug",
+        nativeQuery = true
+    )
+    void decrementLike(String slug);
 }

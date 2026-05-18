@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -132,6 +133,31 @@ class PostControllerTest {
                 .willThrow(new PostNotFoundException("not-found"));
 
         mockMvc.perform(post("/api/posts/not-found/like"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("POST_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("slug 'not-found'에 해당하는 포스트가 존재하지 않습니다."));
+    }
+
+    @Test
+    void 좋아요를_취소하고_메트릭을_반환한다() throws Exception {
+        given(postService.decrementLike("test-slug"))
+                .willReturn(new PostMetricsDto("test-slug", 10, 4));
+
+        mockMvc.perform(delete("/api/posts/test-slug/like"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.slug").value("test-slug"))
+                .andExpect(jsonPath("$.views").value(10))
+                .andExpect(jsonPath("$.likes").value(4));
+
+        then(postService).should().decrementLike("test-slug");
+    }
+
+    @Test
+    void 존재하지_않는_포스트의_좋아요_취소는_404와_에러_응답을_반환한다() throws Exception {
+        given(postService.decrementLike("not-found"))
+                .willThrow(new PostNotFoundException("not-found"));
+
+        mockMvc.perform(delete("/api/posts/not-found/like"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("POST_NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("slug 'not-found'에 해당하는 포스트가 존재하지 않습니다."));

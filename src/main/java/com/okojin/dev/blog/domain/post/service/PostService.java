@@ -76,6 +76,15 @@ public class PostService {
                 .orElse(PostMetricsDto.empty(slug));
     }
 
+    @Transactional
+    public PostMetricsDto decrementLike(String slug) {
+        verifyPublishedPost(slug);
+        postMetricsRepository.decrementLike(slug);
+        return postMetricsRepository.findById(slug)
+                .map(PostMetricsDto::from)
+                .orElse(PostMetricsDto.empty(slug));
+    }
+
     private void verifyPublishedPost(String slug) {
         if (!postRepository.existsBySlugAndPublishedTrue(slug)) {
             throw new PostNotFoundException(slug);
