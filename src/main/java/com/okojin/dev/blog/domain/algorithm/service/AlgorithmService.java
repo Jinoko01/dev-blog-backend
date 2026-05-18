@@ -2,11 +2,10 @@ package com.okojin.dev.blog.domain.algorithm.service;
 
 import com.okojin.dev.blog.domain.algorithm.dto.AlgorithmDto;
 import com.okojin.dev.blog.domain.algorithm.repository.AlgorithmRepository;
+import com.okojin.dev.blog.common.exception.AlgorithmNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +26,6 @@ public class AlgorithmService {
     public AlgorithmDto getAlgorithmById(UUID id) {
         return algorithmRepository.findByIdAndPublishedTrue(id)
                 .map(AlgorithmDto::from)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new AlgorithmNotFoundException(id));
     }
 }

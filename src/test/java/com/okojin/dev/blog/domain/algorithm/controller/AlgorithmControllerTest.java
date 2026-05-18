@@ -1,6 +1,8 @@
 package com.okojin.dev.blog.domain.algorithm.controller;
 
 import com.okojin.dev.blog.auth.JwtUtil;
+import com.okojin.dev.blog.common.exception.AlgorithmNotFoundException;
+import com.okojin.dev.blog.common.exception.GlobalExceptionHandler;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.algorithm.dto.AlgorithmDto;
 import com.okojin.dev.blog.domain.algorithm.service.AlgorithmService;
@@ -8,10 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AlgorithmController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, GlobalExceptionHandler.class})
 class AlgorithmControllerTest {
 
     @Autowired
@@ -77,13 +77,15 @@ class AlgorithmControllerTest {
     }
 
     @Test
-    void 존재하지_않는_ID로_조회하면_404를_반환한다() throws Exception {
+    void 존재하지_않는_ID로_조회하면_404와_에러_응답을_반환한다() throws Exception {
         UUID unknownId = UUID.fromString("99999999-9999-9999-9999-999999999999");
         given(algorithmService.getAlgorithmById(unknownId))
-                .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .willThrow(new AlgorithmNotFoundException(unknownId));
 
         mockMvc.perform(get("/api/algorithms/{id}", unknownId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ALGORITHM_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("id '" + unknownId + "'에 해당하는 알고리즘이 존재하지 않습니다."));
     }
 
     @Test
