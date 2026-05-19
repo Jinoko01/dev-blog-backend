@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
+import com.okojin.dev.blog.common.exception.PostNotFoundException;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -140,8 +140,7 @@ class AdminPostServiceTest {
 
         assertThatThrownBy(() -> adminPostService.update(POST_ID,
                 new PostRequest("제목", "slug", null, null, null, null, List.of())))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("404");
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     @Test

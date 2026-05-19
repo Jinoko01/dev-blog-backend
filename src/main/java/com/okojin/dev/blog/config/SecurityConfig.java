@@ -40,6 +40,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/posts/**", "/api/algorithms/**", "/api/tags/**", "/api/articles/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/posts/*/view", "/api/posts/*/like").permitAll()
+						.requestMatchers(HttpMethod.DELETE, "/api/posts/*/like").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/visits").permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.anyRequest().authenticated()
 				)

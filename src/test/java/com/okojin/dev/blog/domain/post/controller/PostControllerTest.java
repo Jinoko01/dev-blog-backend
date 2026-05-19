@@ -5,6 +5,7 @@ import com.okojin.dev.blog.common.exception.GlobalExceptionHandler;
 import com.okojin.dev.blog.common.exception.PostNotFoundException;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
+import com.okojin.dev.blog.domain.post.dto.PostListResponse;
 import com.okojin.dev.blog.domain.post.dto.PostMetricsDto;
 import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
 import com.okojin.dev.blog.domain.post.service.PostService;
@@ -41,24 +42,25 @@ class PostControllerTest {
 
     @Test
     void 발행된_포스트_목록을_조회한다() throws Exception {
-        given(postService.getPublishedPosts()).willReturn(List.of(postSummary()));
+        given(postService.getPublishedPosts()).willReturn(new PostListResponse(List.of(postSummary()), 100L));
 
         mockMvc.perform(get("/api/posts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].slug").value("test-slug"))
-                .andExpect(jsonPath("$[0].title").value("테스트 포스트"))
-                .andExpect(jsonPath("$[0].tags[0]").value("java"));
+                .andExpect(jsonPath("$.posts[0].slug").value("test-slug"))
+                .andExpect(jsonPath("$.posts[0].title").value("테스트 포스트"))
+                .andExpect(jsonPath("$.posts[0].tags[0]").value("java"))
+                .andExpect(jsonPath("$.total_visitors").value(100));
 
         then(postService).should().getPublishedPosts();
     }
 
     @Test
     void 발행된_포스트가_없으면_빈_배열을_반환한다() throws Exception {
-        given(postService.getPublishedPosts()).willReturn(List.of());
+        given(postService.getPublishedPosts()).willReturn(new PostListResponse(List.of(), 0L));
 
         mockMvc.perform(get("/api/posts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(jsonPath("$.posts").isEmpty());
     }
 
     @Test
