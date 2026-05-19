@@ -1,5 +1,7 @@
 package com.okojin.dev.blog.domain.algorithm.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.okojin.dev.blog.domain.algorithm.entity.Algorithm;
 
 import java.time.OffsetDateTime;
@@ -7,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record AlgorithmDto(
         UUID id,
         String title,
