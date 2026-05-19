@@ -1,5 +1,7 @@
 package com.okojin.dev.blog.domain.post.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.okojin.dev.blog.domain.post.entity.Post;
 import com.okojin.dev.blog.domain.post.entity.PostMetrics;
 
@@ -7,6 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record ArticleDto(
         UUID id,
         String title,
