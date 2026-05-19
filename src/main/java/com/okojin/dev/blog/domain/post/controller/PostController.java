@@ -1,8 +1,8 @@
 package com.okojin.dev.blog.domain.post.controller;
 
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
+import com.okojin.dev.blog.domain.post.dto.PostListResponse;
 import com.okojin.dev.blog.domain.post.dto.PostMetricsDto;
-import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
 import com.okojin.dev.blog.domain.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,8 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Posts", description = "블로그 포스트 API")
 @RestController
@@ -29,7 +27,7 @@ public class PostController {
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @SecurityRequirements
     @GetMapping
-    public List<PostSummaryDto> getPosts() {
+    public PostListResponse getPosts() {
         return postService.getPublishedPosts();
     }
 

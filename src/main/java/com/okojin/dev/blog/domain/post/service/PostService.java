@@ -1,10 +1,12 @@
 package com.okojin.dev.blog.domain.post.service;
 
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
+import com.okojin.dev.blog.domain.post.dto.PostListResponse;
 import com.okojin.dev.blog.domain.post.dto.PostMetricsDto;
 import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
 import com.okojin.dev.blog.domain.post.entity.Post;
 import com.okojin.dev.blog.domain.post.entity.PostMetrics;
+import com.okojin.dev.blog.domain.post.repository.PageViewRepository;
 import com.okojin.dev.blog.domain.post.repository.PostMetricsRepository;
 import com.okojin.dev.blog.domain.post.repository.PostRepository;
 import com.okojin.dev.blog.common.exception.PostNotFoundException;
@@ -23,18 +25,23 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostMetricsRepository postMetricsRepository;
+    private final PageViewRepository pageViewRepository;
 
-    public List<PostSummaryDto> getPublishedPosts() {
+    public PostListResponse getPublishedPosts() {
         List<Post> posts = postRepository.findAllPublishedWithTags();
-        if (posts.isEmpty()) return List.of();
+        long totalVisitors = pageViewRepository.count();
+
+        if (posts.isEmpty()) return new PostListResponse(List.of(), totalVisitors);
 
         Map<String, PostMetrics> metricsMap = fetchMetricsMap(
                 posts.stream().map(Post::getSlug).toList()
         );
 
-        return posts.stream()
+        List<PostSummaryDto> postList = posts.stream()
                 .map(p -> toSummary(p, metricsMap))
                 .toList();
+
+        return new PostListResponse(postList, totalVisitors);
     }
 
     public PostDetailDto getPostBySlug(String slug) {
