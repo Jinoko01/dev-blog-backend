@@ -1,6 +1,7 @@
 package com.okojin.dev.blog.domain.post.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Table(name = "page_views")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class PageView {
 
     @Id
