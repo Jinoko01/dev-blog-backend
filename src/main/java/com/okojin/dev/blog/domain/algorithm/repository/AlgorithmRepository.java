@@ -12,4 +12,6 @@ public interface AlgorithmRepository extends JpaRepository<Algorithm, UUID> {
     List<Algorithm> findByPublishedTrueOrderByCreatedAtDesc();
 
     Optional<Algorithm> findByIdAndPublishedTrue(UUID id);
+
+    long countByPublishedTrue();
 }
