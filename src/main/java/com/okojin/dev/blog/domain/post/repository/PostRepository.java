@@ -16,6 +16,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 
     boolean existsBySlugAndPublishedTrue(String slug);
 
+    long countByPublishedTrue();
+
     @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.postTags pt LEFT JOIN FETCH pt.tag WHERE p.slug = :slug")
     Optional<Post> findBySlugWithTags(String slug);
 
