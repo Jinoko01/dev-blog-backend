@@ -69,4 +69,32 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
-@AGENTS.md
+## Tech Stack
+
+### Frontend
+
+- Next.js 16 (App Router), TypeScript strict, MDX
+- TailwindCSS v4, shadcn/ui, Framer Motion
+- Recharts (Chart), lucide-react (Icons)
+
+### Backend
+
+- Spring Boot 3.x (2026년 기준 3.5.x 또는 3.6.x 안정 버전) + Java 프로젝트 생성 (Gradle)
+- Java 21 JVM 타겟 설정
+- 필수 의존성: spring-boot-starter-web, spring-boot-starter-data-jpa, spring-boot-starter-security, postgresql driver, lombok
+- 추가 의존성: spring-boot-starter-validation (DTO 검증용), jjwt (0.12.x 이상)
+- Supabase PostgreSQL 연결 설정 (`application.yml`)
+- `backend/.env.example` 작성
+
+### Infra
+
+- Supabase
+    - Storage (Images, Backups)
+    - Database (PostgreSQL)
+- JWT 기반 Admin 인증
+
+## Rules
+
+- 기획서/리포트에 가정치 금지. 실측 데이터만, 모르면 TBD 표시
+- 파일 삭제 전 반드시 확인 요청
+- 커밋 메시지는 영어로, conventional commits 형식
