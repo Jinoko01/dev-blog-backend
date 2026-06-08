@@ -9,11 +9,13 @@ import com.okojin.dev.blog.domain.post.entity.PostMetrics;
 import com.okojin.dev.blog.domain.post.repository.PageViewRepository;
 import com.okojin.dev.blog.domain.post.repository.PostMetricsRepository;
 import com.okojin.dev.blog.domain.post.repository.PostRepository;
+import com.okojin.dev.blog.domain.post.repository.PostSummaryProjection;
 import com.okojin.dev.blog.common.exception.PostNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -101,17 +103,8 @@ public class PostService {
     private List<PostSummaryDto> findRelatedPosts(String currentSlug, List<String> tagNames) {
         if (tagNames.isEmpty()) return List.of();
 
-        List<Post> allPosts = postRepository.findAllPublishedWithTags();
-        Map<String, PostMetrics> metricsMap = fetchMetricsMap(
-                allPosts.stream().map(Post::getSlug).toList()
-        );
-
-        return allPosts.stream()
-                .filter(p -> !p.getSlug().equals(currentSlug))
-                .filter(p -> p.getPostTags().stream()
-                        .anyMatch(pt -> tagNames.contains(pt.getTag().getName())))
-                .limit(3)
-                .map(p -> toSummary(p, metricsMap))
+        return postRepository.findRelatedPostSummaries(currentSlug, tagNames).stream()
+                .map(this::toSummary)
                 .toList();
     }
 
@@ -123,5 +116,28 @@ public class PostService {
     private PostSummaryDto toSummary(Post post, Map<String, PostMetrics> metricsMap) {
         PostMetrics m = metricsMap.get(post.getSlug());
         return PostSummaryDto.from(post, m != null ? m.getViews() : 0, m != null ? m.getLikes() : 0);
+    }
+
+    private PostSummaryDto toSummary(PostSummaryProjection projection) {
+        return new PostSummaryDto(
+                projection.getId(),
+                projection.getTitle(),
+                projection.getSlug(),
+                projection.getDescription(),
+                projection.getThumbnailUrl(),
+                Boolean.TRUE.equals(projection.getPublished()),
+                projection.getCreatedAt(),
+                splitTags(projection.getTags()),
+                projection.getViews() != null ? projection.getViews() : 0,
+                projection.getLikes() != null ? projection.getLikes() : 0
+        );
+    }
+
+    private List<String> splitTags(String tags) {
+        if (tags == null || tags.isBlank()) return List.of();
+
+        return Arrays.stream(tags.split(","))
+                .filter(tag -> !tag.isBlank())
+                .toList();
     }
 }
