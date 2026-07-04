@@ -1,6 +1,6 @@
 package com.okojin.dev.blog.domain.post.repository;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public interface PostSummaryProjection {
@@ -17,7 +17,7 @@ public interface PostSummaryProjection {
 
     Boolean getPublished();
 
-    OffsetDateTime getCreatedAt();
+    Instant getCreatedAt();
 
     String getTags();
 

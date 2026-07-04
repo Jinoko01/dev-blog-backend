@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +127,7 @@ public class PostService {
                 projection.getDescription(),
                 projection.getThumbnailUrl(),
                 Boolean.TRUE.equals(projection.getPublished()),
-                projection.getCreatedAt(),
+                projection.getCreatedAt().atOffset(ZoneOffset.UTC),
                 splitTags(projection.getTags()),
                 projection.getViews() != null ? projection.getViews() : 0,
                 projection.getLikes() != null ? projection.getLikes() : 0

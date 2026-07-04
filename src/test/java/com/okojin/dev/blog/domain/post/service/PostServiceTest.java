@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,8 +90,8 @@ class PostServiceTest {
             }
 
             @Override
-            public OffsetDateTime getCreatedAt() {
-                return OffsetDateTime.parse("2026-01-01T00:00:00+09:00");
+            public Instant getCreatedAt() {
+                return Instant.parse("2025-12-31T15:00:00Z");
             }
 
             @Override
