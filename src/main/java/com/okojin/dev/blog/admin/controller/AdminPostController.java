@@ -3,6 +3,7 @@ package com.okojin.dev.blog.admin.controller;
 import com.okojin.dev.blog.admin.dto.PostRequest;
 import com.okojin.dev.blog.admin.service.AdminPostService;
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
+import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Admin - Posts", description = "관리자 포스트 관리 API (JWT 필요)")
@@ -26,6 +28,43 @@ import java.util.UUID;
 public class AdminPostController {
 
     private final AdminPostService adminPostService;
+
+    @Operation(summary = "포스트 목록 조회", description = "게시 여부와 관계없이 모든 포스트를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401",
+                    description = "JWT 토큰 없음 또는 만료. Authorization 헤더에 'Bearer {토큰}' 포함.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다. Authorization 헤더에 'Bearer {토큰}' 형식으로 JWT를 포함하세요.\"}"
+                            )))
+    })
+    @GetMapping
+    public List<PostSummaryDto> getAll() {
+        return adminPostService.getAll();
+    }
+
+    @Operation(summary = "포스트 상세 조회", description = "게시 여부와 관계없이 포스트 하나를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401",
+                    description = "JWT 토큰 없음 또는 만료.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다. Authorization 헤더에 'Bearer {토큰}' 형식으로 JWT를 포함하세요.\"}"
+                            ))),
+            @ApiResponse(responseCode = "404",
+                    description = "포스트 없음. 요청한 UUID가 존재하지 않습니다.",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"POST_NOT_FOUND\",\"message\":\"id '00000000-0000-0000-0000-000000000001'에 해당하는 포스트가 존재하지 않습니다.\"}"
+                            )))
+    })
+    @GetMapping("/{id}")
+    public PostDetailDto getById(
+            @Parameter(description = "포스트 ID (UUID)") @PathVariable UUID id) {
+        return adminPostService.getById(id);
+    }
 
     @Operation(summary = "포스트 생성", description = "새 포스트를 생성합니다.")
     @ApiResponses({

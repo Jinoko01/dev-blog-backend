@@ -2,6 +2,7 @@ package com.okojin.dev.blog.admin.service;
 
 import com.okojin.dev.blog.admin.dto.PostRequest;
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
+import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
 import com.okojin.dev.blog.domain.post.entity.Post;
 import com.okojin.dev.blog.domain.post.entity.PostTag;
 import com.okojin.dev.blog.domain.post.entity.Tag;
@@ -25,6 +26,20 @@ public class AdminPostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
+
+    @Transactional(readOnly = true)
+    public List<PostSummaryDto> getAll() {
+        return postRepository.findAllWithTags().stream()
+                .map(post -> PostSummaryDto.from(post, 0, 0))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PostDetailDto getById(UUID id) {
+        Post post = postRepository.findByIdWithTags(id)
+                .orElseThrow(() -> new PostNotFoundException(id));
+        return toDetailDto(post);
+    }
 
     @Transactional
     public PostDetailDto create(PostRequest request) {

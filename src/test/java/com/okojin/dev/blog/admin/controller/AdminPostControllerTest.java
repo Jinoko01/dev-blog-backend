@@ -8,6 +8,7 @@ import com.okojin.dev.blog.common.exception.GlobalExceptionHandler;
 import com.okojin.dev.blog.common.exception.PostNotFoundException;
 import com.okojin.dev.blog.config.SecurityConfig;
 import com.okojin.dev.blog.domain.post.dto.PostDetailDto;
+import com.okojin.dev.blog.domain.post.dto.PostSummaryDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -55,6 +56,54 @@ class AdminPostControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
                 .andExpect(jsonPath("$.message").value("인증이 필요합니다. Authorization 헤더에 'Bearer {토큰}' 형식으로 JWT를 포함하세요."));
+    }
+
+    @Test
+    void 게시글_목록을_조회한다() throws Exception {
+        given(jwtUtil.isValid(ADMIN_TOKEN)).willReturn(true);
+        given(jwtUtil.extractRole(ADMIN_TOKEN)).willReturn("ADMIN");
+        given(jwtUtil.extractUsername(ADMIN_TOKEN)).willReturn("admin");
+        given(adminPostService.getAll()).willReturn(List.of(postSummary()));
+
+        mockMvc.perform(get("/api/admin/posts")
+                        .header("Authorization", "Bearer " + ADMIN_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(POST_ID.toString()))
+                .andExpect(jsonPath("$[0].title").value("새 게시글"))
+                .andExpect(jsonPath("$[0].published").value(false));
+
+        then(adminPostService).should().getAll();
+    }
+
+    @Test
+    void 게시글_단건을_조회한다() throws Exception {
+        given(jwtUtil.isValid(ADMIN_TOKEN)).willReturn(true);
+        given(jwtUtil.extractRole(ADMIN_TOKEN)).willReturn("ADMIN");
+        given(jwtUtil.extractUsername(ADMIN_TOKEN)).willReturn("admin");
+        given(adminPostService.getById(POST_ID)).willReturn(postDetail(false));
+
+        mockMvc.perform(get("/api/admin/posts/" + POST_ID)
+                        .header("Authorization", "Bearer " + ADMIN_TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(POST_ID.toString()))
+                .andExpect(jsonPath("$.content").value("본문"));
+
+        then(adminPostService).should().getById(POST_ID);
+    }
+
+    @Test
+    void 존재하지_않는_게시글_조회_시_404와_에러_응답을_반환한다() throws Exception {
+        given(jwtUtil.isValid(ADMIN_TOKEN)).willReturn(true);
+        given(jwtUtil.extractRole(ADMIN_TOKEN)).willReturn("ADMIN");
+        given(jwtUtil.extractUsername(ADMIN_TOKEN)).willReturn("admin");
+        given(adminPostService.getById(POST_ID))
+                .willThrow(new PostNotFoundException(POST_ID));
+
+        mockMvc.perform(get("/api/admin/posts/" + POST_ID)
+                        .header("Authorization", "Bearer " + ADMIN_TOKEN))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("POST_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("id '" + POST_ID + "'에 해당하는 포스트가 존재하지 않습니다."));
     }
 
     @Test
@@ -170,6 +219,21 @@ class AdminPostControllerTest {
 
     private PostRequest validPostRequest() {
         return new PostRequest("새 게시글", "new-post", "설명", "본문", null, false, List.of("java"));
+    }
+
+    private PostSummaryDto postSummary() {
+        return new PostSummaryDto(
+                POST_ID,
+                "새 게시글",
+                "new-post",
+                "설명",
+                null,
+                false,
+                OffsetDateTime.parse("2025-01-01T00:00:00Z"),
+                List.of("java"),
+                0,
+                0
+        );
     }
 
     private PostDetailDto postDetail(boolean published) {
