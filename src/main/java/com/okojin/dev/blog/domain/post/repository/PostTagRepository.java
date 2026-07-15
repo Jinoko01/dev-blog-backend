@@ -18,7 +18,7 @@ public interface PostTagRepository extends JpaRepository<PostTag, PostTagId> {
 
     void deleteByPostId(UUID postId);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM PostTag pt WHERE pt.id.postId = :postId")
     void bulkDeleteByPostId(UUID postId);
 }
